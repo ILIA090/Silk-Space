@@ -103,26 +103,31 @@ profileBtn.onclick = () => profileForm.style.display='block';
 saveProfileBtn.onclick = saveProfile;
 chatsBtn.onclick = () => { chatSection.style.display='block'; loadChats(); }
 
-// ذخیره محصول
+// ذخیره محصول (اصلاح شده)
 saveProductBtn.onclick = async () => {
-  const title = productTitle.value;
-  const desc = productDesc.value;
+  const title = productTitle.value.trim();
+  const desc = productDesc.value.trim();
   const image = productImage.files[0];
   if(!title){ alert('عنوان لازم است'); return; }
+
   const formData = new FormData();
   formData.append('title', title);
   formData.append('desc', desc);
   if(image) formData.append('image', image);
-  const res = await fetch(`${SERVER_URL}/addProduct/${currentUser.id}`, {
-    method:'POST', body: formData
-  });
-  const data = await res.json();
-  if(data.error) alert(data.error);
-  else {
-    addProductForm.style.display='none';
-    productTitle.value=''; productDesc.value=''; productImage.value='';
-    loadProducts();
-  }
+
+  try {
+    const res = await fetch(`${SERVER_URL}/addProduct/${currentUser.id}`, {
+      method:'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if(data.error) alert(data.error);
+    else {
+      addProductForm.style.display='none';
+      productTitle.value=''; productDesc.value=''; productImage.value='';
+      loadProducts();
+    }
+  } catch(err){ alert('خطا در ارسال محصول'); }
 };
 
 // بارگذاری محصولات
@@ -139,47 +144,64 @@ async function loadProducts(){
   });
 }
 
-// ذخیره پروفایل
+// ذخیره پروفایل (اصلاح شده)
 async function saveProfile(){
   const formData = new FormData();
-  if(profileName.value) formData.append('username', profileName.value);
-  if(profileDesc.value) formData.append('description', profileDesc.value);
+  if(profileName.value.trim()) formData.append('username', profileName.value.trim());
+  if(profileDesc.value.trim()) formData.append('description', profileDesc.value.trim());
   if(profileAvatar.files[0]) formData.append('avatar', profileAvatar.files[0]);
-  const res = await fetch(`${SERVER_URL}/updateUser/${currentUser.id}`, {
-    method:'POST', body: formData
-  });
-  const data = await res.json();
-  if(data.error) alert(data.error);
-  else {
-    currentUser = data;
-    localStorage.setItem('user', JSON.stringify(currentUser));
-    profileForm.style.display='none';
-    alert('پروفایل شما بروزرسانی شد');
-  }
+
+  try{
+    const res = await fetch(`${SERVER_URL}/updateUser/${currentUser.id}`, {
+      method:'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if(data.error) alert(data.error);
+    else {
+      currentUser = data;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      profileForm.style.display='none';
+      alert('پروفایل شما بروزرسانی شد');
+    }
+  } catch(err){ alert('خطا در بروزرسانی پروفایل'); }
 }
 
-// چت
+// ارسال پیام
 sendChatBtn.onclick = async () => {
-  const text = chatMessage.value;
+  const text = chatMessage.value.trim();
   if(!text){ alert('پیام نمی‌تواند خالی باشد'); return; }
-  const toUserId = prompt('پیام برای کدام کاربر؟ وارد کنید:');
-  const res = await fetch(`${SERVER_URL}/sendMessage`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({from: currentUser.id, to: toUserId, text})
-  });
-  const data = await res.json();
-  chatMessage.value='';
-  loadChats();
+  const toUserId = prompt('پیام برای کدام کاربر؟ شناسه کاربر را وارد کنید:');
+  if(!toUserId) return;
+
+  try{
+    await fetch(`${SERVER_URL}/sendMessage`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({from: currentUser.id, to: toUserId, text})
+    });
+    chatMessage.value='';
+    loadChats();
+  } catch(err){ alert('ارسال پیام ناموفق بود'); }
 }
 
+// بارگذاری چت‌ها فقط پیام‌های رسیده به کاربر
 async function loadChats(){
-  const res = await fetch(`${SERVER_URL}/getMessages/${currentUser.id}`);
-  const messages = await res.json();
-  chatList.innerHTML='';
-  messages.forEach(m=>{
-    const div = document.createElement('div');
-    div.textContent = `${m.from===currentUser.id?'شما':'کاربر '+m.from}: ${m.text}`;
-    chatList.appendChild(div);
-  });
-      }
+  try{
+    const res = await fetch(`${SERVER_URL}/getMessages/${currentUser.id}`);
+    const messages = await res.json();
+    chatList.innerHTML='';
+    const incoming = messages.filter(m=>m.to===currentUser.id);
+    if(incoming.length===0){
+      chatList.innerHTML='<p>هیچ پیامی برای شما ارسال نشده است</p>';
+      return;
+    }
+    incoming.forEach(m=>{
+      const div = document.createElement('div');
+      div.textContent = `کاربر ${m.from}: ${m.text}`;
+      chatList.appendChild(div);
+    });
+  } catch(err){
+    chatList.innerHTML='<p>خطا در بارگذاری پیام‌ها</p>';
+  }
+    }
