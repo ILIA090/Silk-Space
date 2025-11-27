@@ -1,115 +1,126 @@
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-function setUser(user){
-    currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    if(user){
-        document.getElementById('auth').style.display='none';
-        document.getElementById('home').style.display='block';
-        document.getElementById('logoutBtn').style.display='inline';
-        loadProducts();
-    } else {
-        document.getElementById('auth').style.display='flex';
-        document.getElementById('home').style.display='none';
-        document.getElementById('logoutBtn').style.display='none';
-    }
-}
-setUser(currentUser);
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, '/')));
+app.use('/images', express.static(path.join(__dirname, '/images')));
 
-// ثبت‌نام
-document.getElementById('signupBtn').onclick = async ()=>{
-    const login = document.getElementById('loginInput').value;
-    const password = document.getElementById('password').value;
-    if(!login||!password) return alert('وارد کردن همه فیلدها لازم است');
-    const res = await fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:login,email:login,password})});
-    const data = await res.json();
-    if(res.ok) setUser(data.user);
-    else alert(data.error);
-};
+// مدیریت فایل‌ها برای آپلود
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'images/'),
+    filename: (req, file, cb) => cb(null, Date.now()+'-'+file.originalname)
+});
+const upload = multer({storage});
 
-// ورود
-document.getElementById('loginBtn').onclick = async ()=>{
-    const login = document.getElementById('loginInput').value;
-    const password = document.getElementById('password').value;
-    if(!login||!password) return alert('وارد کردن همه فیلدها لازم است');
-    const res = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({login,password})});
-    const data = await res.json();
-    if(res.ok) setUser(data.user);
-    else alert(data.error);
-};
+// خواندن و نوشتن دیتابیس
+const dbFile = path.join(__dirname, 'database.json');
+function readDB(){ return JSON.parse(fs.readFileSync(dbFile)); }
+function writeDB(data){ fs.writeFileSync(dbFile, JSON.stringify(data,null,2)); }
 
-// خروج
-document.getElementById('logoutBtn').onclick = ()=>{
-    setUser(null);
-};
+// مسیر ثبت‌نام / ورود
+app.post('/signup', (req,res)=>{
+    const {username,password} = req.body;
+    const db = readDB();
+    if(db.users.find(u=>u.username===username)) return res.status(400).json({error:'نام کاربری وجود دارد'});
+    const id = Date.now().toString();
+    const user = {id,username,password,desc:'',avatar:''};
+    db.users.push(user);
+    writeDB(db);
+    res.json(user);
+});
 
-// افزودن محصول
-document.getElementById('addProductBtn').onclick = ()=>{document.getElementById('addProductForm').style.display='flex';};
-document.getElementById('cancelProductBtn').onclick = ()=>{document.getElementById('addProductForm').style.display='none';};
+app.post('/login', (req,res)=>{
+    const {username,password} = req.body;
+    const db = readDB();
+    const user = db.users.find(u=>u.username===username && u.password===password);
+    if(!user) return res.status(400).json({error:'نام کاربری یا رمز اشتباه است'});
+    res.json(user);
+});
 
-document.getElementById('saveProductBtn').onclick = async ()=>{
-    const title = document.getElementById('productTitle').value;
-    if(!title) return alert('عنوان لازم است');
-    const desc = document.getElementById('productDesc').value;
-    const imgFile = document.getElementById('productImage').files[0];
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', desc);
-    formData.append('owner_id', currentUser.id);
-    if(imgFile) formData.append('image', imgFile);
+// پروفایل
+app.post('/updateProfile/:id', upload.single('avatar'), (req,res)=>{
+    const id = req.params.id;
+    const {username,desc} = req.body;
+    const db = readDB();
+    const user = db.users.find(u=>u.id===id);
+    if(!user) return res.status(400).json({error:'کاربر یافت نشد'});
+    if(username) user.username = username;
+    if(desc) user.desc = desc;
+    if(req.file) user.avatar = '/images/'+req.file.filename;
+    writeDB(db);
+    res.json(user);
+});
 
-    const res = await fetch('/product',{method:'POST',body:formData});
-    const data = await res.json();
-    if(res.ok){ document.getElementById('addProductForm').style.display='none'; loadProducts(); }
-    else alert(data.error);
-};
+// محصولات
+app.post('/addProduct/:userId', upload.single('image'), (req,res)=>{
+    const {title,desc} = req.body;
+    const userId = req.params.userId;
+    const db = readDB();
+    const id = Date.now().toString();
+    const imgPath = req.file ? '/images/'+req.file.filename : '';
+    db.products.push({id,title,desc,image:imgPath,owner:userId});
+    writeDB(db);
+    res.json({status:'ok'});
+});
 
-// بارگذاری محصولات
-async function loadProducts(){
-    const res = await fetch('/products');
-    const products = await res.json();
-    const container = document.getElementById('products');
-    container.innerHTML='';
-    products.forEach(p=>{
-        const div = document.createElement('div');
-        div.className='product-card';
-        div.innerHTML=`<strong>${p.title}</strong><br>${p.description||''}<br>
-        ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:10px;">`:""}<br>
-        ${p.owner_id===currentUser.id?'<button class="neon-btn delete-btn">حذف</button>':`<button class="neon-btn chat-btn">پیوی فروشنده</button>`}`;
-        container.appendChild(div);
+app.get('/products', (req,res)=>{
+    const db = readDB();
+    res.json(db.products);
+});
 
-        if(p.owner_id===currentUser.id){
-            div.querySelector('.delete-btn').onclick=async ()=>{
-                await fetch('/deleteProduct',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id,userId:currentUser.id})});
-                loadProducts();
-            };
-        } else {
-            div.querySelector('.chat-btn').onclick=()=>{ openChat(p.owner_id); };
+app.delete('/deleteProduct/:id/:userId', (req,res)=>{
+    const {id,userId} = req.params;
+    const db = readDB();
+    const product = db.products.find(p=>p.id===id);
+    if(!product) return res.status(400).json({error:'محصول یافت نشد'});
+    if(product.owner!==userId) return res.status(403).json({error:'دسترسی ندارید'});
+    db.products = db.products.filter(p=>p.id!==id);
+    writeDB(db);
+    res.json({status:'ok'});
+});
+
+// چت
+app.post('/sendMessage', (req,res)=>{
+    const {from_id,to_id,msg} = req.body;
+    const db = readDB();
+    db.messages.push({from_id,to_id,msg,time:Date.now()});
+    writeDB(db);
+    res.json({status:'ok'});
+});
+
+app.get('/myChats/:userId',(req,res)=>{
+    const userId = req.params.userId;
+    const db = readDB();
+    const msgs = db.messages;
+    const chatUsers = [];
+    msgs.forEach(m=>{
+        if(m.from_id===userId && !chatUsers.find(u=>u.id===m.to_id)){
+            const u = db.users.find(u=>u.id===m.to_id);
+            if(u) chatUsers.push(u);
+        }
+        if(m.to_id===userId && !chatUsers.find(u=>u.id===m.from_id)){
+            const u = db.users.find(u=>u.id===m.from_id);
+            if(u) chatUsers.push(u);
         }
     });
-}
+    res.json(chatUsers);
+});
 
-// جستجو
-document.getElementById('search').oninput = async e=>{
-    const query = e.target.value.toLowerCase();
-    const res = await fetch('/products');
-    const products = await res.json();
-    const container = document.getElementById('products');
-    container.innerHTML='';
-    products.filter(p=>p.title.toLowerCase().includes(query)).forEach(p=>{
-        const div = document.createElement('div');
-        div.className='product-card';
-        div.innerHTML=`<strong>${p.title}</strong><br>${p.description||''}<br>
-        ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:10px;">`:""}<br>
-        ${p.owner_id===currentUser.id?'<button class="neon-btn delete-btn">حذف</button>':`<button class="neon-btn chat-btn">پیوی فروشنده</button>`}`;
-        container.appendChild(div);
-        if(p.owner_id===currentUser.id){
-            div.querySelector('.delete-btn').onclick=async ()=>{
-                await fetch('/deleteProduct',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id,userId:currentUser.id})});
-                loadProducts();
-            };
-        } else {
-            div.querySelector('.chat-btn').onclick=()=>{ openChat(p.owner_id); };
-        }
-    });
-};
+app.get('/getMessages/:user1/:user2',(req,res)=>{
+    const {user1,user2} = req.params;
+    const db = readDB();
+    const msgs = db.messages.filter(m=> 
+        (m.from_id===user1 && m.to_id===user2) || 
+        (m.from_id===user2 && m.to_id===user1)
+    );
+    res.json(msgs);
+});
+
+app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));
