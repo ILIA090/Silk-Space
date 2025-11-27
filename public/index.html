@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silk Space</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@appwrite/sdk@9.0.0/dist/appwrite.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- لوگو -->
+  <header>
+    <img src="logo.png" alt="Silk Space" id="logo">
+    <button id="logoutBtn" style="display:none;">خروج</button>
+  </header>
+
+  <!-- فرم ورود / ثبت نام -->
+  <section id="auth">
+    <h2>ورود یا ثبت‌نام</h2>
+    <input type="email" id="email" placeholder="ایمیل">
+    <input type="password" id="password" placeholder="رمز عبور">
+    <button id="signupBtn" class="neon-btn">ثبت‌نام</button>
+    <button id="loginBtn" class="neon-btn">ورود</button>
+  </section>
+
+  <!-- صفحه اصلی محصولات -->
+  <section id="home" style="display:none;">
+    <input type="text" id="search" placeholder="جستجوی محصولات..." class="neon-input">
+    <button id="addProductBtn" class="neon-btn">افزودن محصول</button>
+    <div id="products" class="product-grid"></div>
+  </section>
+
+  <!-- فرم افزودن محصول -->
+  <section id="addProductForm" style="display:none;" class="modal">
+    <div class="modal-content">
+      <h3>افزودن محصول جدید</h3>
+      <input type="text" id="productTitle" placeholder="عنوان محصول" class="neon-input">
+      <input type="text" id="productDesc" placeholder="توضیح محصول (اختیاری)" class="neon-input">
+      <input type="text" id="productImage" placeholder="لینک عکس (اختیاری)" class="neon-input">
+      <button id="saveProductBtn" class="neon-btn">ذخیره محصول</button>
+      <button id="cancelProductBtn" class="neon-btn cancel-btn">لغو</button>
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+/* فونت و پس‌زمینه */
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.0.2/dist/font-face.css');
+
+body {
+    font-family: 'Vazir', sans-serif;
+    background: #0f0f0f url('images/pattern.png') repeat;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
+
+/* هدر */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #1c1c1c;
+    box-shadow: 0 0 20px #ff6f00;
+}
+
+#logo {
+    height: 60px;
+    animation: neonGlow 2s ease-in-out infinite alternate;
+}
+
+/* دکمه‌ها */
+button.neon-btn {
+    background: transparent;
+    color: #ff6f00;
+    border: 2px solid #ff6f00;
+    padding: 8px 15px;
+    margin: 5px;
+    cursor: pointer;
+    text-shadow: 0 0 5px #ff6f00;
+    transition: 0.3s;
+}
+button.neon-btn:hover {
+    box-shadow: 0 0 20px #ff6f00, 0 0 30px #ff6f00;
+}
+
+/* اینپوت‌ها */
+input.neon-input {
+    width: 90%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 2px solid #00f0ff;
+    background-color: #1c1c1c;
+    color: #fff;
+    outline: none;
+    box-shadow: 0 0 10px #00f0ff;
+    transition: 0.3s;
+}
+input.neon-input:focus {
+    box-shadow: 0 0 20px #00f0ff;
+}
+
+/* محصولات */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.product-card {
+    background-color: #1c1c1c;
+    border: 2px solid #ff6f00;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 0 10px #ff6f00;
+    transition: 0.3s;
+}
+.product-card:hover {
+    box-shadow: 0 0 25px #ff6f00;
+}
+
+/* modal فرم افزودن محصول */
+.modal {
+    position: fixed;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background-color: #1c1c1c;
+    padding: 20px;
+    border: 2px solid #ff6f00;
+    border-radius: 10px;
+}
+
+/* انیمیشن نئون لوگو */
+@keyframes neonGlow {
+    0% { text-shadow: 0 0 5px #ff6f00; }
+    50% { text-shadow: 0 0 20px #ff6f00; }
+    100% { text-shadow: 0 0 5px #ff6f00; }
+}
