@@ -9,59 +9,36 @@
 <body>
 <div id="app">
 
-  <!-- هدر -->
   <header>
-    <img src="logo.png" id="logo" alt="Silk Space">
+    <img src="logo.png" alt="Silk Space" id="logo">
     <button id="logoutBtn" style="display:none;">خروج</button>
-    <button id="chatsBtn" style="display:none;">چت‌ها</button>
+    <button id="myChatsBtn" style="display:none;">چت‌ها</button>
   </header>
 
-  <!-- فرم ورود / ثبت نام -->
+  <!-- ورود/ثبت نام -->
   <section id="auth">
     <h2>ورود یا ثبت‌نام</h2>
-    <input type="text" id="username" placeholder="نام یا ایمیل">
+    <input type="text" id="username" placeholder="نام کاربری یا ایمیل">
     <input type="password" id="password" placeholder="رمز عبور">
-    <button id="signupBtn" class="neon-btn">ثبت‌نام</button>
-    <button id="loginBtn" class="neon-btn">ورود</button>
+    <button id="signupBtn">ثبت‌نام</button>
+    <button id="loginBtn">ورود</button>
   </section>
 
-  <!-- صفحه اصلی -->
+  <!-- صفحه اصلی محصولات -->
   <section id="home" style="display:none;">
-    <input type="text" id="search" placeholder="جستجوی محصولات..." class="neon-input">
-    <button id="addProductBtn" class="neon-btn">افزودن محصول</button>
-    <div id="products" class="product-grid"></div>
+    <input type="text" id="search" placeholder="جستجوی محصولات...">
+    <button id="addProductBtn">افزودن محصول</button>
+    <div id="products"></div>
   </section>
 
   <!-- فرم افزودن محصول -->
-  <section id="addProductForm" style="display:none;" class="modal">
-    <div class="modal-content">
-      <h3>افزودن محصول جدید</h3>
-      <input type="text" id="productTitle" placeholder="عنوان محصول" class="neon-input">
-      <input type="text" id="productDesc" placeholder="توضیح محصول (اختیاری)" class="neon-input">
-      <input type="file" id="productImageFile" class="neon-input">
-      <button id="saveProductBtn" class="neon-btn">ذخیره محصول</button>
-      <button id="cancelProductBtn" class="neon-btn cancel-btn">لغو</button>
-    </div>
-  </section>
-
-  <!-- مدال چت -->
-  <section id="chatModal" style="display:none;" class="modal">
-    <div class="modal-content">
-      <h3>چت با <span id="chatWith"></span></h3>
-      <div id="chatMessages" style="height:200px;overflow:auto;background:#111;padding:5px;margin-bottom:5px;"></div>
-      <input type="text" id="chatInput" placeholder="پیام..." class="neon-input">
-      <button id="sendChatBtn" class="neon-btn">ارسال</button>
-      <button id="closeChatBtn" class="neon-btn cancel-btn">بستن</button>
-    </div>
-  </section>
-
-  <!-- مدال لیست چت‌ها -->
-  <section id="chatsModal" style="display:none;" class="modal">
-    <div class="modal-content">
-      <h3>چت‌ها</h3>
-      <div id="chatsList"></div>
-      <button id="closeChatsBtn" class="neon-btn cancel-btn">بستن</button>
-    </div>
+  <section id="addProductForm" style="display:none;">
+    <h3>افزودن محصول جدید</h3>
+    <input type="text" id="productTitle" placeholder="عنوان">
+    <input type="text" id="productDesc" placeholder="توضیح">
+    <input type="file" id="productImage">
+    <button id="saveProductBtn">ذخیره</button>
+    <button id="cancelProductBtn">لغو</button>
   </section>
 
 </div>
