@@ -1,207 +1,152 @@
 const SERVER_URL = 'https://silk-space-v2.onrender.com';
 
-// المان‌ها
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const signupBtn = document.getElementById('signupBtn');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const profileBtn = document.getElementById('profileBtn');
-const chatsBtn = document.getElementById('chatsBtn');
-
-const authSection = document.getElementById('auth');
-const homeSection = document.getElementById('home');
-const addProductForm = document.getElementById('addProductForm');
-const profileForm = document.getElementById('profileForm');
-const chatSection = document.getElementById('chatSection');
-
-const productTitle = document.getElementById('productTitle');
-const productDesc = document.getElementById('productDesc');
-const productImage = document.getElementById('productImage');
-const saveProductBtn = document.getElementById('saveProductBtn');
-const cancelProductBtn = document.getElementById('cancelProductBtn');
-
-const profileName = document.getElementById('profileName');
-const profileDesc = document.getElementById('profileDesc');
-const profileAvatar = document.getElementById('profileAvatar');
-const saveProfileBtn = document.getElementById('saveProfileBtn');
-
-const chatList = document.getElementById('chatList');
-const chatMessage = document.getElementById('chatMessage');
-const sendChatBtn = document.getElementById('sendChatBtn');
-
 let currentUser = null;
 
-// بررسی ورود قبلی
-window.onload = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if(user){
-    currentUser = user;
-    showHome();
-    loadProducts();
-  }
-};
-
-function showHome(){
-  authSection.style.display = 'none';
-  homeSection.style.display = 'block';
-  logoutBtn.style.display = 'inline';
-  profileBtn.style.display = 'inline';
-  chatsBtn.style.display = 'inline';
-}
+// نمایش/پنهان کردن فرم‌ها
+function show(id){ document.getElementById(id).style.display='flex'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
 
 // ثبت نام
-signupBtn.onclick = async () => {
-  const username = usernameInput.value;
-  const password = passwordInput.value;
-  if(!username || !password){ alert('همه فیلدها لازم است'); return; }
-  const res = await fetch(`${SERVER_URL}/signup`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({username,password})
-  });
-  const data = await res.json();
-  if(data.error) alert(data.error);
-  else {
+document.getElementById('signupBtn').onclick = async ()=>{
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const res = await fetch(`${SERVER_URL}/signup`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username,password,email})
+    });
+    const data = await res.json();
+    if(data.error) return alert(data.error);
+    alert('ثبت نام موفق!');
     currentUser = data;
-    localStorage.setItem('user', JSON.stringify(currentUser));
-    showHome();
-    loadProducts();
-  }
+    initHome();
 };
 
 // ورود
-loginBtn.onclick = async () => {
-  const username = usernameInput.value;
-  const password = passwordInput.value;
-  if(!username || !password){ alert('همه فیلدها لازم است'); return; }
-  const res = await fetch(`${SERVER_URL}/login`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({username,password})
-  });
-  const data = await res.json();
-  if(data.error) alert(data.error);
-  else {
-    currentUser = data;
-    localStorage.setItem('user', JSON.stringify(currentUser));
-    showHome();
-    loadProducts();
-  }
-};
-
-// خروج
-logoutBtn.onclick = () => {
-  localStorage.removeItem('user');
-  location.reload();
-};
-
-// باز و بستن فرم‌ها
-document.getElementById('addProductBtn').onclick = () => { addProductForm.style.display='block'; }
-cancelProductBtn.onclick = () => addProductForm.style.display='none';
-profileBtn.onclick = () => profileForm.style.display='block';
-saveProfileBtn.onclick = saveProfile;
-chatsBtn.onclick = () => { chatSection.style.display='block'; loadChats(); }
-
-// ذخیره محصول (اصلاح شده)
-saveProductBtn.onclick = async () => {
-  const title = productTitle.value.trim();
-  const desc = productDesc.value.trim();
-  const image = productImage.files[0];
-  if(!title){ alert('عنوان لازم است'); return; }
-
-  const formData = new FormData();
-  formData.append('title', title);
-  formData.append('desc', desc);
-  if(image) formData.append('image', image);
-
-  try {
-    const res = await fetch(`${SERVER_URL}/addProduct/${currentUser.id}`, {
-      method:'POST',
-      body: formData
+document.getElementById('loginBtn').onclick = async ()=>{
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const res = await fetch(`${SERVER_URL}/login`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username,password,email})
     });
     const data = await res.json();
-    if(data.error) alert(data.error);
-    else {
-      addProductForm.style.display='none';
-      productTitle.value=''; productDesc.value=''; productImage.value='';
-      loadProducts();
-    }
-  } catch(err){ alert('خطا در ارسال محصول'); }
+    if(data.error) return alert(data.error);
+    currentUser = data;
+    initHome();
+};
+
+// شروع صفحه اصلی
+function initHome(){
+    hide('auth');
+    show('home');
+    document.getElementById('logoutBtn').style.display='inline';
+    document.getElementById('chatBtn').style.display='inline';
+    document.getElementById('profileBtn').style.display='inline';
+    loadProducts();
+}
+
+// خروج
+document.getElementById('logoutBtn').onclick = ()=>{
+    location.reload();
+};
+
+// اضافه کردن محصول
+document.getElementById('addProductBtn').onclick = ()=>{ show('addProductForm'); };
+document.getElementById('cancelProductBtn').onclick = ()=>{ hide('addProductForm'); };
+
+// ذخیره محصول
+document.getElementById('saveProductBtn').onclick = async ()=>{
+    const title = document.getElementById('productTitle').value;
+    const desc = document.getElementById('productDesc').value;
+    const image = document.getElementById('productImage').files[0];
+
+    if(!title) return alert('عنوان لازم است');
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('desc', desc);
+    if(image) formData.append('image', image);
+
+    const res = await fetch(`${SERVER_URL}/addProduct/${currentUser.id}`, { method:'POST', body:formData });
+    const data = await res.json();
+    if(data.error) return alert('خطا در ارسال محصول: '+data.error);
+
+    hide('addProductForm');
+    loadProducts();
 };
 
 // بارگذاری محصولات
 async function loadProducts(){
-  const res = await fetch(`${SERVER_URL}/products`);
-  const products = await res.json();
-  const productsDiv = document.getElementById('products');
-  productsDiv.innerHTML='';
-  products.forEach(p=>{
-    const div = document.createElement('div');
-    div.innerHTML=`<strong>${p.title}</strong><br>${p.desc || ''}`;
-    if(p.image) div.innerHTML+=`<br><img src="${SERVER_URL}${p.image}" width="100">`;
-    productsDiv.appendChild(div);
-  });
+    const res = await fetch(`${SERVER_URL}/products`);
+    const products = await res.json();
+    const container = document.getElementById('products');
+    container.innerHTML = '';
+    products.forEach(p=>{
+        const div = document.createElement('div');
+        div.className='product-card';
+        div.innerHTML = `<strong>${p.title}</strong><br>${p.desc || ''}<br>
+        ${p.image ? `<img src="${SERVER_URL}${p.image}" width="100">` : ''}
+        <button onclick="startChat('${p.ownerId}')" class="neon-btn">پیوی فروشنده</button>`;
+        if(p.ownerId===currentUser.id) div.innerHTML+=`<button onclick="deleteProduct('${p.id}')" class="neon-btn cancel-btn">حذف محصول</button>`;
+        container.appendChild(div);
+    });
 }
 
-// ذخیره پروفایل (اصلاح شده)
-async function saveProfile(){
-  const formData = new FormData();
-  if(profileName.value.trim()) formData.append('username', profileName.value.trim());
-  if(profileDesc.value.trim()) formData.append('description', profileDesc.value.trim());
-  if(profileAvatar.files[0]) formData.append('avatar', profileAvatar.files[0]);
-
-  try{
-    const res = await fetch(`${SERVER_URL}/updateUser/${currentUser.id}`, {
-      method:'POST',
-      body: formData
-    });
+// حذف محصول
+async function deleteProduct(id){
+    const res = await fetch(`${SERVER_URL}/deleteProduct/${id}/${currentUser.id}`, { method:'DELETE' });
     const data = await res.json();
-    if(data.error) alert(data.error);
-    else {
-      currentUser = data;
-      localStorage.setItem('user', JSON.stringify(currentUser));
-      profileForm.style.display='none';
-      alert('پروفایل شما بروزرسانی شد');
-    }
-  } catch(err){ alert('خطا در بروزرسانی پروفایل'); }
+    if(data.error) return alert(data.error);
+    loadProducts();
 }
 
-// ارسال پیام
-sendChatBtn.onclick = async () => {
-  const text = chatMessage.value.trim();
-  if(!text){ alert('پیام نمی‌تواند خالی باشد'); return; }
-  const toUserId = prompt('پیام برای کدام کاربر؟ شناسه کاربر را وارد کنید:');
-  if(!toUserId) return;
+// پروفایل
+document.getElementById('profileBtn').onclick = ()=>{
+    show('profileForm');
+    document.getElementById('profileUsername').value = currentUser.username;
+    document.getElementById('profileDesc').value = currentUser.description || '';
+};
+document.getElementById('cancelProfileBtn').onclick = ()=>{ hide('profileForm'); };
 
-  try{
-    await fetch(`${SERVER_URL}/sendMessage`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({from: currentUser.id, to: toUserId, text})
-    });
-    chatMessage.value='';
-    loadChats();
-  } catch(err){ alert('ارسال پیام ناموفق بود'); }
-}
+document.getElementById('saveProfileBtn').onclick = async ()=>{
+    const username = document.getElementById('profileUsername').value;
+    const description = document.getElementById('profileDesc').value;
+    const avatar = document.getElementById('profileAvatar').files[0];
 
-// بارگذاری چت‌ها فقط پیام‌های رسیده به کاربر
-async function loadChats(){
-  try{
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('description', description);
+    if(avatar) formData.append('avatar', avatar);
+
+    const res = await fetch(`${SERVER_URL}/updateUser/${currentUser.id}`, { method:'POST', body:formData });
+    const data = await res.json();
+    if(data.error) return alert(data.error);
+    currentUser = data;
+    hide('profileForm');
+    alert('تغییرات ذخیره شد!');
+};
+
+// چت‌ها
+document.getElementById('chatBtn').onclick = async ()=>{
+    show('chatForm');
     const res = await fetch(`${SERVER_URL}/getMessages/${currentUser.id}`);
     const messages = await res.json();
-    chatList.innerHTML='';
-    const incoming = messages.filter(m=>m.to===currentUser.id);
-    if(incoming.length===0){
-      chatList.innerHTML='<p>هیچ پیامی برای شما ارسال نشده است</p>';
-      return;
-    }
-    incoming.forEach(m=>{
-      const div = document.createElement('div');
-      div.textContent = `کاربر ${m.from}: ${m.text}`;
-      chatList.appendChild(div);
+    const container = document.getElementById('chatList');
+    container.innerHTML='';
+    if(messages.length===0){ container.innerHTML='هیچ پیامی برای شما ارسال نشده'; return; }
+    messages.forEach(m=>{
+        const div = document.createElement('div');
+        div.className='product-card';
+        div.innerHTML=`<strong>از: ${m.from}</strong><br>${m.text}`;
+        container.appendChild(div);
     });
-  } catch(err){
-    chatList.innerHTML='<p>خطا در بارگذاری پیام‌ها</p>';
-  }
-    }
+};
+document.getElementById('closeChatBtn').onclick = ()=>{ hide('chatForm'); };
+
+// شروع
+window.onload = ()=>{
+    if(currentUser) initHome();
+};
