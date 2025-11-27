@@ -8,24 +8,25 @@
 </head>
 <body>
 <div id="app">
-
+  <!-- هدر -->
   <header>
     <img src="logo.png" alt="Silk Space" id="logo">
     <button id="logoutBtn" style="display:none;">خروج</button>
-    <button id="profileBtn" style="display:none;">پروفایل من</button>
-    <button id="chatsBtn" style="display:none;">چت‌ها</button>
+    <button id="chatBtn" style="display:none;">چت‌ها</button>
+    <button id="profileBtn" style="display:none;">پروفایل</button>
   </header>
 
-  <!-- ورود/ثبت نام -->
+  <!-- فرم ورود / ثبت نام -->
   <section id="auth">
     <h2>ورود یا ثبت‌نام</h2>
     <input type="text" id="username" placeholder="نام کاربری" class="neon-input">
+    <input type="email" id="email" placeholder="ایمیل (اختیاری)" class="neon-input">
     <input type="password" id="password" placeholder="رمز عبور" class="neon-input">
     <button id="signupBtn" class="neon-btn">ثبت‌نام</button>
     <button id="loginBtn" class="neon-btn">ورود</button>
   </section>
 
-  <!-- صفحه اصلی محصولات -->
+  <!-- صفحه محصولات -->
   <section id="home" style="display:none;">
     <input type="text" id="search" placeholder="جستجوی محصولات..." class="neon-input">
     <button id="addProductBtn" class="neon-btn">افزودن محصول</button>
@@ -33,34 +34,40 @@
   </section>
 
   <!-- فرم افزودن محصول -->
-  <section id="addProductForm" style="display:none;">
-    <h3>افزودن محصول جدید</h3>
-    <input type="text" id="productTitle" placeholder="عنوان" class="neon-input">
-    <input type="text" id="productDesc" placeholder="توضیح" class="neon-input">
-    <input type="file" id="productImage" accept="image/*">
-    <button id="saveProductBtn" class="neon-btn">ذخیره</button>
-    <button id="cancelProductBtn" class="neon-btn">لغو</button>
+  <section id="addProductForm" style="display:none;" class="modal">
+    <div class="modal-content">
+      <h3>افزودن محصول</h3>
+      <input type="text" id="productTitle" placeholder="عنوان" class="neon-input">
+      <input type="text" id="productDesc" placeholder="توضیح (اختیاری)" class="neon-input">
+      <input type="file" id="productImage" class="neon-input">
+      <button id="saveProductBtn" class="neon-btn">ذخیره</button>
+      <button id="cancelProductBtn" class="neon-btn cancel-btn">لغو</button>
+    </div>
   </section>
 
   <!-- فرم پروفایل -->
-  <section id="profileForm" style="display:none;">
-    <h3>ویرایش پروفایل</h3>
-    <input type="text" id="profileName" placeholder="نام کاربری جدید" class="neon-input">
-    <textarea id="profileDesc" placeholder="توضیحات شما" class="neon-input"></textarea>
-    <input type="file" id="profileAvatar" accept="image/*">
-    <button id="saveProfileBtn" class="neon-btn">ذخیره تغییرات</button>
+  <section id="profileForm" style="display:none;" class="modal">
+    <div class="modal-content">
+      <h3>پروفایل شما</h3>
+      <input type="text" id="profileUsername" placeholder="نام کاربری" class="neon-input">
+      <textarea id="profileDesc" placeholder="توضیح کوتاه" class="neon-input"></textarea>
+      <input type="file" id="profileAvatar" class="neon-input">
+      <button id="saveProfileBtn" class="neon-btn">ذخیره تغییرات</button>
+      <button id="cancelProfileBtn" class="neon-btn cancel-btn">لغو</button>
+    </div>
   </section>
 
-  <!-- لیست چت‌ها -->
-  <section id="chatSection" style="display:none;">
-    <h3>چت‌ها</h3>
-    <div id="chatList"></div>
-    <input type="text" id="chatMessage" placeholder="پیام خود را بنویسید..." class="neon-input">
-    <button id="sendChatBtn" class="neon-btn">ارسال</button>
+  <!-- فرم چت -->
+  <section id="chatForm" style="display:none;" class="modal">
+    <div class="modal-content">
+      <h3>چت‌ها</h3>
+      <div id="chatList" class="product-grid"></div>
+      <button id="closeChatBtn" class="neon-btn cancel-btn">بستن</button>
+    </div>
   </section>
 
 </div>
 
-<script src="chat.js"></script>
+<script src="frontend.js"></script>
 </body>
 </html>
