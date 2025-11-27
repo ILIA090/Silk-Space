@@ -1,141 +1,115 @@
-let currentUser = null;
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-// بررسی لاگین محلی
 function setUser(user){
     currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
     if(user){
-        document.getElementById('auth').style.display = 'none';
-        document.getElementById('home').style.display = 'block';
-        document.getElementById('logoutBtn').style.display = 'inline';
+        document.getElementById('auth').style.display='none';
+        document.getElementById('home').style.display='block';
+        document.getElementById('logoutBtn').style.display='inline';
         loadProducts();
     } else {
-        document.getElementById('auth').style.display = 'block';
-        document.getElementById('home').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('auth').style.display='flex';
+        document.getElementById('home').style.display='none';
+        document.getElementById('logoutBtn').style.display='none';
     }
 }
-setUser(null);
+setUser(currentUser);
 
 // ثبت‌نام
-document.getElementById('signupBtn').onclick = async () => {
-    const email = document.getElementById('email').value;
+document.getElementById('signupBtn').onclick = async ()=>{
+    const login = document.getElementById('loginInput').value;
     const password = document.getElementById('password').value;
-    if(!email || !password) return alert('ایمیل و رمز لازم است');
-
-    try{
-        const res = await fetch('/signup', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({email,password})
-        });
-        const data = await res.json();
-        if(res.ok){
-            alert(data.message);
-            setUser(data.user);
-        } else {
-            alert(data.error);
-        }
-    }catch(err){ console.log(err); }
+    if(!login||!password) return alert('وارد کردن همه فیلدها لازم است');
+    const res = await fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:login,email:login,password})});
+    const data = await res.json();
+    if(res.ok) setUser(data.user);
+    else alert(data.error);
 };
 
 // ورود
-document.getElementById('loginBtn').onclick = async () => {
-    const email = document.getElementById('email').value;
+document.getElementById('loginBtn').onclick = async ()=>{
+    const login = document.getElementById('loginInput').value;
     const password = document.getElementById('password').value;
-    if(!email || !password) return alert('ایمیل و رمز لازم است');
-
-    try{
-        const res = await fetch('/login', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({email,password})
-        });
-        const data = await res.json();
-        if(res.ok){
-            alert(data.message);
-            setUser(data.user);
-        } else {
-            alert(data.error);
-        }
-    }catch(err){ console.log(err); }
+    if(!login||!password) return alert('وارد کردن همه فیلدها لازم است');
+    const res = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({login,password})});
+    const data = await res.json();
+    if(res.ok) setUser(data.user);
+    else alert(data.error);
 };
 
 // خروج
-document.getElementById('logoutBtn').onclick = () => {
+document.getElementById('logoutBtn').onclick = ()=>{
     setUser(null);
-    document.getElementById('email').value='';
-    document.getElementById('password').value='';
 };
 
 // افزودن محصول
-document.getElementById('addProductBtn').onclick = () => {
-    document.getElementById('addProductForm').style.display = 'flex';
-};
-document.getElementById('cancelProductBtn').onclick = () => {
-    document.getElementById('addProductForm').style.display = 'none';
-};
+document.getElementById('addProductBtn').onclick = ()=>{document.getElementById('addProductForm').style.display='flex';};
+document.getElementById('cancelProductBtn').onclick = ()=>{document.getElementById('addProductForm').style.display='none';};
 
-// ذخیره محصول
-document.getElementById('saveProductBtn').onclick = async () => {
+document.getElementById('saveProductBtn').onclick = async ()=>{
     const title = document.getElementById('productTitle').value;
-    if(!title){ alert('عنوان محصول لازم است'); return; }
+    if(!title) return alert('عنوان لازم است');
     const desc = document.getElementById('productDesc').value;
-    const img = document.getElementById('productImage').value;
-    if(!currentUser) { alert('ابتدا وارد شوید'); return; }
+    const imgFile = document.getElementById('productImage').files[0];
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', desc);
+    formData.append('owner_id', currentUser.id);
+    if(imgFile) formData.append('image', imgFile);
 
-    try{
-        const res = await fetch('/product', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({title, description: desc, image: img, owner_id: currentUser.id})
-        });
-        const data = await res.json();
-        if(res.ok){
-            document.getElementById('addProductForm').style.display = 'none';
-            loadProducts();
-        } else {
-            alert(data.error);
-        }
-    }catch(err){ console.log(err); }
+    const res = await fetch('/product',{method:'POST',body:formData});
+    const data = await res.json();
+    if(res.ok){ document.getElementById('addProductForm').style.display='none'; loadProducts(); }
+    else alert(data.error);
 };
 
 // بارگذاری محصولات
 async function loadProducts(){
-    try{
-        const res = await fetch('/products');
-        const products = await res.json();
-        const container = document.getElementById('products');
-        container.innerHTML = '';
-        products.forEach(doc=>{
-            const div = document.createElement('div');
-            div.className = 'product-card';
-            div.innerHTML = `<strong>${doc.title}</strong><br>${doc.description || ''}<br>
-            <button onclick="goToSeller('${doc.owner_id}')" class="neon-btn">پیوی فروشنده</button>`;
-            container.appendChild(div);
-        });
-    }catch(err){ console.log(err); }
+    const res = await fetch('/products');
+    const products = await res.json();
+    const container = document.getElementById('products');
+    container.innerHTML='';
+    products.forEach(p=>{
+        const div = document.createElement('div');
+        div.className='product-card';
+        div.innerHTML=`<strong>${p.title}</strong><br>${p.description||''}<br>
+        ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:10px;">`:""}<br>
+        ${p.owner_id===currentUser.id?'<button class="neon-btn delete-btn">حذف</button>':`<button class="neon-btn chat-btn">پیوی فروشنده</button>`}`;
+        container.appendChild(div);
+
+        if(p.owner_id===currentUser.id){
+            div.querySelector('.delete-btn').onclick=async ()=>{
+                await fetch('/deleteProduct',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id,userId:currentUser.id})});
+                loadProducts();
+            };
+        } else {
+            div.querySelector('.chat-btn').onclick=()=>{ openChat(p.owner_id); };
+        }
+    });
 }
 
-// رفتن به پیوی فروشنده
-function goToSeller(ownerId){
-    alert('برای خرید با این فروشنده باید در شبکه اجتماعی خودش هماهنگ کنید: '+ownerId);
-}
-
-// جستجو محصولات
-document.getElementById('search').oninput = async (e)=>{
+// جستجو
+document.getElementById('search').oninput = async e=>{
     const query = e.target.value.toLowerCase();
-    try{
-        const res = await fetch('/products');
-        const products = await res.json();
-        const container = document.getElementById('products');
-        container.innerHTML='';
-        products.filter(doc=>doc.title.toLowerCase().includes(query))
-        .forEach(doc=>{
-            const div = document.createElement('div');
-            div.className='product-card';
-            div.innerHTML=`<strong>${doc.title}</strong><br>${doc.description || ''}<br>
-            <button onclick="goToSeller('${doc.owner_id}')" class="neon-btn">پیوی فروشنده</button>`;
-            container.appendChild(div);
-        });
-    }catch(err){ console.log(err); }
+    const res = await fetch('/products');
+    const products = await res.json();
+    const container = document.getElementById('products');
+    container.innerHTML='';
+    products.filter(p=>p.title.toLowerCase().includes(query)).forEach(p=>{
+        const div = document.createElement('div');
+        div.className='product-card';
+        div.innerHTML=`<strong>${p.title}</strong><br>${p.description||''}<br>
+        ${p.image?`<img src="${p.image}" style="max-width:100%;border-radius:10px;">`:""}<br>
+        ${p.owner_id===currentUser.id?'<button class="neon-btn delete-btn">حذف</button>':`<button class="neon-btn chat-btn">پیوی فروشنده</button>`}`;
+        container.appendChild(div);
+        if(p.owner_id===currentUser.id){
+            div.querySelector('.delete-btn').onclick=async ()=>{
+                await fetch('/deleteProduct',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:p.id,userId:currentUser.id})});
+                loadProducts();
+            };
+        } else {
+            div.querySelector('.chat-btn').onclick=()=>{ openChat(p.owner_id); };
+        }
+    });
 };
