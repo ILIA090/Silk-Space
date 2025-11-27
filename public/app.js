@@ -49,6 +49,18 @@ app.post('/login', (req,res)=>{
   res.json(user);
 });
 
+// ===== بروزرسانی پروفایل =====
+app.post('/updateUser/:userId', upload.single('avatar'), (req,res)=>{
+  const db = loadDB();
+  const user = db.users.find(u=>u.id===req.params.userId);
+  if(!user) return res.json({error:'کاربر پیدا نشد'});
+  if(req.body.username) user.username = req.body.username;
+  if(req.body.description) user.description = req.body.description;
+  if(req.file) user.avatar = `/uploads/${req.file.filename}`;
+  saveDB(db);
+  res.json(user);
+});
+
 // ===== محصولات =====
 app.post('/addProduct/:ownerId', upload.single('image'), (req,res)=>{
   const db = loadDB();
@@ -70,6 +82,34 @@ app.post('/addProduct/:ownerId', upload.single('image'), (req,res)=>{
 app.get('/products', (req,res)=>{
   const db = loadDB();
   res.json(db.products);
+});
+
+// ===== حذف محصول =====
+app.delete('/deleteProduct/:productId/:userId', (req,res)=>{
+  const db = loadDB();
+  const product = db.products.find(p=>p.id===req.params.productId);
+  if(!product) return res.json({error:'محصول پیدا نشد'});
+  if(product.owner !== req.params.userId) return res.json({error:'حق حذف ندارید'});
+  db.products = db.products.filter(p=>p.id!==req.params.productId);
+  saveDB(db);
+  res.json({success:true});
+});
+
+// ===== چت =====
+app.post('/sendMessage', (req,res)=>{
+  const { from, to, text } = req.body;
+  if(!from || !to || !text) return res.json({error:'فیلدها ناقص'});
+  const db = loadDB();
+  const newMsg = {id:Date.now().toString(), from, to, text, created_at: new Date().toISOString()};
+  db.messages.push(newMsg);
+  saveDB(db);
+  res.json(newMsg);
+});
+
+app.get('/getMessages/:userId', (req,res)=>{
+  const db = loadDB();
+  const msgs = db.messages.filter(m=>m.from===req.params.userId || m.to===req.params.userId);
+  res.json(msgs);
 });
 
 // ===== شروع سرور =====
