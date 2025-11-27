@@ -21,6 +21,8 @@ header {
     padding: 15px;
     background-color: #1c1c1c;
     box-shadow: 0 0 20px #ff6f00;
+    width: 90%;
+    max-width: 1200px;
 }
 
 #logo {
@@ -28,39 +30,12 @@ header {
     animation: neonGlow 2s ease-in-out infinite alternate;
 }
 
-/* فرم‌ها */
-#auth, .modal {
-    position: fixed;
-    top:0; left:0;
-    width: 100%; height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0,0,0,0.85);
-}
-
-.neon-input {
-    width: 90%;
-    max-width: 400px;
-    padding: 10px;
-    margin: 10px 0;
-    border: 2px solid #00f0ff;
-    background-color: #1c1c1c;
-    color: #fff;
-    outline: none;
-    box-shadow: 0 0 10px #00f0ff;
-    transition: 0.3s;
-}
-.neon-input:focus {
-    box-shadow: 0 0 20px #00f0ff;
-}
-
+/* دکمه‌ها */
 button.neon-btn {
     background: transparent;
     color: #ff6f00;
     border: 2px solid #ff6f00;
-    padding: 10px 20px;
+    padding: 8px 15px;
     margin: 5px;
     cursor: pointer;
     text-shadow: 0 0 5px #ff6f00;
@@ -69,37 +44,72 @@ button.neon-btn {
 button.neon-btn:hover {
     box-shadow: 0 0 20px #ff6f00, 0 0 30px #ff6f00;
 }
-button.cancel-btn { border-color:#f00; color:#f00; }
 
+/* اینپوت‌ها */
+input.neon-input, textarea.neon-input {
+    width: 90%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 2px solid #00f0ff;
+    background-color: #1c1c1c;
+    color: #fff;
+    outline: none;
+    box-shadow: 0 0 10px #00f0ff;
+    transition: 0.3s;
+}
+input.neon-input:focus, textarea.neon-input:focus {
+    box-shadow: 0 0 20px #00f0ff;
+}
+
+/* محصولات */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 10px;
 }
 
 .product-card {
     background-color: #1c1c1c;
     border: 2px solid #ff6f00;
-    border-radius: 15px;
-    padding: 15px;
+    border-radius: 10px;
+    padding: 10px;
     text-align: center;
     box-shadow: 0 0 10px #ff6f00;
     transition: 0.3s;
 }
-.product-card:hover { box-shadow: 0 0 25px #ff6f00; }
-
-.modal-content { 
-    background-color: #1c1c1c; 
-    padding: 20px; 
-    border: 2px solid #ff6f00; 
-    border-radius: 10px;
-    width: 90%; max-width: 500px;
+.product-card:hover {
+    box-shadow: 0 0 25px #ff6f00;
 }
 
-.chat-content { width: 90%; max-width: 500px; }
-.chat-messages { height: 200px; overflow-y: auto; background:#111; padding:10px; margin:10px 0; border-radius:10px; }
+/* modal فرم‌ها */
+.modal {
+    position: fixed;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background-color: #1c1c1c;
+    padding: 20px;
+    border: 2px solid #ff6f00;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+}
 
+.chat-messages {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border: 1px solid #00f0ff;
+    padding: 10px;
+}
+
+/* انیمیشن نئون لوگو */
 @keyframes neonGlow {
     0% { text-shadow: 0 0 5px #ff6f00; }
     50% { text-shadow: 0 0 20px #ff6f00; }
